@@ -1,13 +1,18 @@
-import { Card } from "@/Components/ui/card";
+
+// import { login } from "@/lib/auth";
+import Image from "next/image";
 import LoginForm from "./LoginForm";
 
+
 export default function LoginPage() {
-    return (
-        <div className="h-screen flex justify-center items-center">
-            <Card className={'p-6'}>
-                 <LoginForm />
-            </Card>
-        </div>
-       
-    )
+//   const handleLogin = async (data) => {
+//     await login(data.email, data.password);
+//     // redirect logic
+//   };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center p-6">
+      <LoginForm />
+    </div>
+  );
 }

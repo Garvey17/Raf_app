@@ -21,6 +21,7 @@ import {
   LogOut
 } from "lucide-react";
 
+import { logo } from "@/Assets/assets";
 import {miriokuLogo} from "@/Assets/assets"; // <--- your logo
 
 const mainMenu = [
@@ -45,14 +46,16 @@ export function AppSidebar() {
           <SidebarContent>
 
             {/* Logo */}
-            <SidebarGroup className="px-6 py-8">
-              <Link href="/">
-                <Image src={miriokuLogo} width={150} alt="Logo" className="mb-8" />
-              </Link>
+            <SidebarGroup className="px-6 py-4 flex flex-col items-center">
+              <div>
+                <Link href="/">
+                  <Image src={logo} width={100} alt="Logo" className="mb-8" />
+                </Link>
+              </div>
 
               {/* MAIN MENU */}
               <SidebarGroupContent>
-                <SidebarMenu className="space-y-2 font-semibold">
+                <SidebarMenu className="space-y-2 font-semibold ">
                   {mainMenu.map((item) => (
                     <SidebarMenuItem key={item.title}>
 
