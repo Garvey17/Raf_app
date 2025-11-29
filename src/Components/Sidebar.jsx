@@ -11,27 +11,24 @@ import {
   ShoppingCart,
   Truck,
   CreditCard,
-  FileText,
   MessageSquare,
   BarChart2,
-  Bell,
-  User,
   Settings,
   Plus,
-  LogOut
+  Power,
 } from "lucide-react";
 
 import { logo } from "@/Assets/assets";
-import {miriokuLogo} from "@/Assets/assets"; // <--- your logo
+import { signOut } from "next-auth/react";
+
 
 const mainMenu = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
   { title: "Products", icon: Package, url: "/products" },
-  { title: "Orders", icon: ShoppingCart, url: "/orders" },
+  { title: "Order", icon: ShoppingCart, url: "/order" },
   { title: "Deliveries", icon: Truck, url: "/deliveries" },
   { title: "Payments", icon: CreditCard, url: "/payments" },
   { title: "Support", icon: MessageSquare, url: "/support" },
-  { title: "Analytics", icon: BarChart2, url: "/analytics" },
   { title: "Settings", icon: Settings, url: "/settings" },
 ];
 
@@ -40,108 +37,79 @@ export function AppSidebar() {
   const pathname = usePathname()
 
   const isActive = (url) => pathname === url
+  const handleLogOut = async () => {
+    await signOut({ callbackUrl: "/auth/login" })
+  }
   return (
 
-        <Sidebar className="border-r bg-white">
-          <SidebarContent>
+    <Sidebar className="border-r border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl no-scrollbar">
+      <SidebarContent className="no-scrollbar">
 
-            {/* Logo */}
-            <SidebarGroup className="px-6 py-4 flex flex-col items-center">
-              <div>
-                <Link href="/">
-                  <Image src={logo} width={100} alt="Logo" className="mb-8" />
-                </Link>
-              </div>
+        {/* Logo */}
+        <SidebarGroup className="px-6 py-6 flex flex-col items-center">
+          <div className="flex justify-center items-center w-full mb-6">
+            <Link href="/dashboard" className="transform hover:scale-105 transition-transform duration-300">
+              <Image src={logo} width={120} alt="Logo" className="drop-shadow-sm" />
+            </Link>
+          </div>
 
-              {/* MAIN MENU */}
-              <SidebarGroupContent>
-                <SidebarMenu className="space-y-2 font-semibold ">
-                  {mainMenu.map((item) => (
-                    <SidebarMenuItem key={item.title}>
+          {/* MAIN MENU */}
+          <SidebarGroupContent>
+            <SidebarMenu className="space-y-1.5">
+              {mainMenu.map((item) => (
+                <SidebarMenuItem key={item.title}>
 
-                      <SidebarMenuButton
-                        asChild
-                        className={`flex items-center gap-3 py-3 text-[15px] transition duration-200 rounded-lg
-                          ${
-                            isActive(item.url)
-                              ? "bg-[#2664FE] text-white shadow-sm"
-                              : "hover:bg-[#2664FE]/80 hover:text-white text-gray-700"
-                          }
+                  <SidebarMenuButton
+                    asChild
+                    className={`flex items-center gap-3 px-4 py-3 text-[15px] font-medium transition-all duration-200 rounded-xl group
+                          ${isActive(item.url)
+                        ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/30"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400"
+                      }
                         `}
-                      >
-                        <Link href={item.url}>
-                          <item.icon
-                            className={`h-5 w-5 transition
-                              ${isActive(item.url) ? "text-white" : "text-gray-700 group-hover:text-white"}
+                  >
+                    <Link href={item.url}>
+                      <item.icon
+                        className={`h-5 w-5 transition-colors duration-200
+                              ${isActive(item.url) ? "text-white" : "text-gray-500 dark:text-gray-500 group-hover:text-blue-600 dark:group-hover:text-blue-400"}
                             `}
-                          />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
+                      />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
 
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
 
-            </SidebarGroup>
-          {/*Divicer*/}
-          <div className="px-6">
-            <div className="h-[1px] w-full bg-gray-200 my-4"></div>
-          </div>
-  
-          {/* QUICK ACTIONS */}
-          <div className="px-6">
-            <p className="text-sm text-gray-400 mb-3">Quick actions</p>
-  
-            <div className="flex flex-col gap-3">
-              <button className="flex items-center gap-3 text-[15px]">
-                <Plus className="h-5 w-5" />
-                Request product
-              </button>
-  
-              <button className="flex items-center gap-3 text-[15px]">
-                <Plus className="h-5 w-5" />
-                Add member
-              </button>
-            </div>
-          </div>
-  
-          {/* LAST ORDERS */}
-          {/* <div className="px-6 mt-8">
-            <p className="text-sm text-gray-400 mb-3">Last orders 37</p>
-  
-            <div className="flex flex-col gap-4">
-              <div className="flex items-center gap-3">
-                <Image src="/shoe.png" width={40} height={40} alt="" className="rounded-md" />
-                <div>
-                  <p className="text-[14px] font-medium">DXC Nike…</p>
-                  <Link href="/orders/1" className="text-blue-600 text-sm">View order</Link>
-                </div>
+        </SidebarGroup>
+        {/*Divicer*/}
+        <div className="px-6">
+          <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-gray-200 dark:via-slate-700 to-transparent my-4"></div>
+        </div>
+
+        {/* QUICK ACTIONS */}
+        <div className="px-6 pb-6">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 px-2">Quick actions</p>
+
+          <div className="flex flex-col gap-3">
+            <button className="flex items-center gap-3 px-4 py-2.5 text-[15px] font-medium text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-slate-700 hover:text-blue-600 dark:hover:text-blue-400 rounded-xl transition-all duration-200 border border-gray-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-900 group">
+              <div className="p-1 bg-white dark:bg-slate-700 rounded-lg shadow-sm group-hover:shadow-md transition-shadow">
+                <Plus className="h-4 w-4 text-blue-600 dark:text-blue-400" />
               </div>
-  
-              <div className="flex items-center gap-3">
-                <Image src="/jacket.png" width={40} height={40} alt="" className="rounded-md" />
-                <div>
-                  <p className="text-[14px] font-medium">Outerwear…</p>
-                  <Link href="/orders/2" className="text-blue-600 text-sm">View order</Link>
-                </div>
-              </div>
-  
-              <Link href="/orders" className="text-blue-600 text-sm">See all</Link>
-            </div>
-          </div> */}
-  
-          {/* LOGOUT */}
-          {/* <div className="px-6 absolute bottom-6">
-            <button className="flex items-center gap-3 text-red-500 text-[15px]">
-              <LogOut className="h-5 w-5" />
+              Request product
+            </button>
+
+            <button onClick={handleLogOut} className="flex items-center gap-3 px-4 py-2.5 text-[15px] font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all duration-200 group mt-2">
+              <Power className="h-5 w-5 group-hover:scale-110 transition-transform" />
               Log out
             </button>
-          </div> */}
-          </SidebarContent>
-        </Sidebar>
+          </div>
+        </div>
+      </SidebarContent>
+    </Sidebar>
 
-     
+
   );
 }
