@@ -23,7 +23,7 @@ import { logo } from "@/Assets/assets";
 
 
 const mainMenu = [
-  { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
+  { title: "Dashboard", icon: LayoutDashboard, url: "/" },
   // { title: "Products", icon: Package, url: "/products" },
   { title: "Order", icon: ShoppingCart, url: "/order" },
   // { title: "Deliveries", icon: Truck, url: "/deliveries" }, -- Removed for simplicity
@@ -53,7 +53,7 @@ export function AppSidebar() {
         {/* Logo */}
         <SidebarGroup className="px-6 py-6 flex flex-col items-center">
           <div className="flex justify-center items-center w-full mb-6">
-            <Link href="/dashboard" className="transform hover:scale-105 transition-transform duration-300">
+            <Link href="/" className="transform hover:scale-105 transition-transform duration-300">
               <Image src={logo} width={120} alt="Logo" className="drop-shadow-sm" />
             </Link>
           </div>

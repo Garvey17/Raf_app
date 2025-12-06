@@ -35,7 +35,7 @@ export async function middleware(request) {
   } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
-  const publicRoutes = ["/auth/login", "/auth/register", "/auth/reset-password", "/auth/verify-email"]
+  const publicRoutes = ["/auth/login", "/auth/register", "/auth/reset-password", "/auth/verify-email", "/website"]
   const isPublic = publicRoutes.some((route) => pathname.startsWith(route))
   const isHome = pathname === "/"
 
@@ -46,17 +46,10 @@ export async function middleware(request) {
     return NextResponse.redirect(url)
   }
 
-  // 2. If authenticated and they try to access "/" → redirect to dashboard
-  if (isHome && user) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
-    return NextResponse.redirect(url)
-  }
-
-  // 3. If authenticated and trying to access auth pages -> redirect to dashboard
+  // 2. If authenticated and they try to access public routes -> redirect to dashboard (/)
   if (user && isPublic) {
     const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
+    url.pathname = '/'
     return NextResponse.redirect(url)
   }
 

@@ -48,7 +48,10 @@ export default function DashboardHeader() {
     const segments = pathname.split("/").filter(Boolean)
 
     const main = segments[0]
-    if (!main) return; // Handle root path
+    if (!main) {
+      setPageName("Dashboard")
+      return
+    }
 
     const formatted = main.charAt(0).toUpperCase() + main.slice(1).toLowerCase();
 

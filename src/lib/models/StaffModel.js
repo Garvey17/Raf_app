@@ -115,7 +115,7 @@ staffSchema.pre("save", async function (next) {
 // Index for efficient querying
 staffSchema.index({ status: 1, department: 1 });
 staffSchema.index({ role: 1 });
-staffSchema.index({ staffNumber: 1 });
+
 
 // Force model recompilation in development to ensure new fields are picked up
 if (process.env.NODE_ENV === "development" && mongoose.models.Staff) {

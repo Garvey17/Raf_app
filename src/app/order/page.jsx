@@ -1,24 +1,24 @@
 "use client";
 
 import { useOrderStore } from "@/store/orderStore";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 export default function OrderPage() {
   const { formData, setFormData, submitOrder, loading, error, success, resetForm, products, fetchProducts } = useOrderStore();
   const router = useRouter();
-  const searchParams = useSearchParams();
+  // const searchParams = useSearchParams();
 
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
 
-  useEffect(() => {
-    const productParam = searchParams.get('product');
-    if (productParam) {
-      setFormData({ product: productParam });
-    }
-  }, [searchParams, setFormData]);
+  // useEffect(() => {
+  //   const productParam = searchParams.get('product');
+  //   if (productParam) {
+  //     setFormData({ product: productParam });
+  //   }
+  // }, [searchParams, setFormData]);
 
   const handleChange = (e) => {
     setFormData({ [e.target.name]: e.target.value });
@@ -39,7 +39,7 @@ export default function OrderPage() {
       await submitOrder(formData);
       alert("Order submitted successfully!");
       resetForm();
-      router.push("/dashboard");
+      router.push("/");
     } catch (err) {
       console.error(err);
       alert("Failed to submit order: " + err.message);

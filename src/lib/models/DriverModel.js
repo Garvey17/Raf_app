@@ -121,7 +121,7 @@ driverSchema.pre("save", async function (next) {
 
 // Index for efficient querying
 driverSchema.index({ status: 1 });
-driverSchema.index({ driverNumber: 1 });
+
 driverSchema.index({ vehicleAssigned: 1 });
 
 // Force model recompilation in development to ensure new fields are picked up
