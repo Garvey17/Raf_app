@@ -4,6 +4,7 @@ import { User, Bell, Lock, Palette, Shield, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import ThemeToggle from "../../Components/ThemeButton";
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -83,31 +84,12 @@ export default function SettingsPage() {
             color: "emerald",
             selects: [
                 {
-                    name: "language",
-                    label: "Language",
-                    options: [
-                        { value: "en", label: "English" },
-                        { value: "yo", label: "Yoruba" },
-                        { value: "ig", label: "Igbo" },
-                        { value: "ha", label: "Hausa" }
-                    ]
-                },
-                {
                     name: "theme",
                     label: "Theme",
                     options: [
                         { value: "light", label: "Light" },
                         { value: "dark", label: "Dark" },
                         { value: "system", label: "System" }
-                    ]
-                },
-                {
-                    name: "currency",
-                    label: "Currency",
-                    options: [
-                        { value: "NGN", label: "Nigerian Naira (₦)" },
-                        { value: "USD", label: "US Dollar ($)" },
-                        { value: "GBP", label: "British Pound (£)" }
                     ]
                 }
             ]
@@ -203,17 +185,23 @@ export default function SettingsPage() {
                                             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                                 {select.label}
                                             </label>
-                                            <select
-                                                value={settings[select.name]}
-                                                onChange={(e) => handleChange(select.name, e.target.value)}
-                                                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
-                                            >
-                                                {select.options.map((option) => (
-                                                    <option key={option.value} value={option.value}>
-                                                        {option.label}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            {select.name === 'theme' ? (
+                                                <div className="w-full px-4 py-2 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white flex items-center">
+                                                    <ThemeToggle />
+                                                </div>
+                                            ) : (
+                                                <select
+                                                    value={settings[select.name]}
+                                                    onChange={(e) => handleChange(select.name, e.target.value)}
+                                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm sm:text-base"
+                                                >
+                                                    {select.options.map((option) => (
+                                                        <option key={option.value} value={option.value}>
+                                                            {option.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            )}
                                         </div>
                                     ))}
                                 </div>

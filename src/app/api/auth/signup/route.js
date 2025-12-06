@@ -1,12 +1,9 @@
-import User from "@/lib/models/UserModel";
-import { connectDB } from "@/lib/config/dbSetup";
+import { User } from "@/lib/services/dataService";
 import { hash } from "bcrypt";
 
 
 export async function POST(req) {
     try {
-        await connectDB()
-
         const { name, email, password, phone, location } = await req.json()
 
         // Validate required fields

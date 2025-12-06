@@ -1,21 +1,37 @@
 "use client";
 
 import { useOrderStore } from "@/store/orderStore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo } from "react";
 
 export default function OrderPage() {
-  const { formData, setFormData, submitOrder, loading, error, success, resetForm } = useOrderStore();
+  const { formData, setFormData, submitOrder, loading, error, success, resetForm, products, fetchProducts } = useOrderStore();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const products = [
-    { id: 1, name: "Dangote Cement 50kg" },
-    { id: 2, name: "BUA Cement 50kg" },
-    { id: 3, name: "Lafarge Cement 50kg" },
-  ];
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    const productParam = searchParams.get('product');
+    if (productParam) {
+      setFormData({ product: productParam });
+    }
+  }, [searchParams, setFormData]);
 
   const handleChange = (e) => {
     setFormData({ [e.target.name]: e.target.value });
   };
+
+  const selectedProduct = useMemo(() => {
+    return products.find(p => p.title === formData.product);
+  }, [products, formData.product]);
+
+  const totalPrice = useMemo(() => {
+    if (!selectedProduct) return 0;
+    return selectedProduct.price * formData.quantity;
+  }, [selectedProduct, formData.quantity]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +39,7 @@ export default function OrderPage() {
       await submitOrder(formData);
       alert("Order submitted successfully!");
       resetForm();
-      router.push("/dashboard"); // Redirect to dashboard or orders list
+      router.push("/dashboard");
     } catch (err) {
       console.error(err);
       alert("Failed to submit order: " + err.message);
@@ -61,8 +77,8 @@ export default function OrderPage() {
                   >
                     <option value="">Select a product...</option>
                     {products.map(p => (
-                      <option key={p.id} value={p.name}>
-                        {p.name}
+                      <option key={p.id} value={p.title}>
+                        {p.title} - ₦{p.price.toLocaleString()}
                       </option>
                     ))}
                   </select>
@@ -193,6 +209,13 @@ export default function OrderPage() {
                 <div className="pb-4 border-b border-gray-100 dark:border-slate-800">
                   <p className="text-gray-500 dark:text-gray-400 mb-1">Quantity</p>
                   <p className="font-semibold text-gray-900 dark:text-white">{formData.quantity} bags</p>
+                </div>
+
+                <div className="pb-4 border-b border-gray-100 dark:border-slate-800">
+                  <p className="text-gray-500 dark:text-gray-400 mb-1">Total Price</p>
+                  <p className="text-2xl font-bold text-blue-600">
+                    ₦{totalPrice.toLocaleString()}
+                  </p>
                 </div>
 
                 <div className="pb-4 border-b border-gray-100 dark:border-slate-800">

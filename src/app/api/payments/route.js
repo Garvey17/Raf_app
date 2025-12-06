@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Payment from "@/lib/models/PaymentModel";
+import { Payment } from "@/lib/services/dataService";
 
 // GET all payments
 export async function GET(req) {
     try {
-        await connectDB();
-
         const { searchParams } = new URL(req.url);
         const verificationStatus = searchParams.get("verificationStatus"); // Filter by verification status
         const paymentMethod = searchParams.get("paymentMethod"); // Filter by payment method

@@ -1,53 +1,39 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
-import { connectDB } from "@/lib/config/dbSetup";
-import Notification from "@/lib/models/NotificationModel";
+import { createClient } from "@/lib/supabase/server";
 
-// GET /api/notifications - Fetch user notifications
 export async function GET(req) {
     try {
-        const session = await getServerSession(authOptions);
+        const supabase = await createClient();
 
-        if (!session || !session.user) {
-            return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
-            );
+        // Get authenticated user
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        await connectDB();
+        // Fetch notifications for the user
+        const { data: notifications, error } = await supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(50); // Reasonable limit
 
-        const { searchParams } = new URL(req.url);
-        const unreadOnly = searchParams.get("unreadOnly") === "true";
-        const limit = parseInt(searchParams.get("limit") || "50");
-
-        // Build query: user-specific notifications OR company broadcasts (userId: null)
-        const query = {
-            $or: [
-                { userId: session.user.id },
-                { userId: null }, // Company broadcasts
-            ],
-        };
-
-        if (unreadOnly) {
-            query.read = false;
+        if (error) {
+            console.error("Supabase fetch error:", error);
+            throw new Error(error.message);
         }
 
-        const notifications = await Notification.find(query)
-            .sort({ createdAt: -1 })
-            .limit(limit)
-            .lean();
+        return NextResponse.json(
+            { notifications: notifications || [] },
+            { status: 200 }
+        );
 
-        return NextResponse.json({
-            success: true,
-            notifications,
-            count: notifications.length,
-        });
     } catch (error) {
         console.error("Error fetching notifications:", error);
         return NextResponse.json(
-            { error: "Failed to fetch notifications" },
+            { error: error.message || "Internal Server Error" },
             { status: 500 }
         );
     }

@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Order from "@/lib/models/OrderModel";
+import { Order, Dispatch } from "@/lib/services/dataService";
 
 // GET approved orders ready for dispatch (not yet in dispatch system)
 export async function GET(req) {
     try {
-        await connectDB();
-
         const { searchParams } = new URL(req.url);
         const startDate = searchParams.get("startDate");
         const endDate = searchParams.get("endDate");
@@ -32,14 +29,13 @@ export async function GET(req) {
             .populate("user", "name email phone");
 
         // Check which orders already have dispatches
-        const Dispatch = (await import("@/lib/models/DispatchModel")).default;
         const orderIds = orders.map(order => order._id);
         const existingDispatches = await Dispatch.find({
             order: { $in: orderIds }
-        }).select("order");
+        });
 
         const dispatchedOrderIds = new Set(
-            existingDispatches.map(d => d.order.toString())
+            existingDispatches.map(d => (typeof d.order === 'object' ? d.order._id : d.order).toString())
         );
 
         // Filter out orders that already have dispatches

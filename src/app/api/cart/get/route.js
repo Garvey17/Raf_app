@@ -1,12 +1,9 @@
-import { connectDB } from "@/lib/config/dbSetup";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import Cart from "@/lib/models/CartModel";
+import { Cart } from "@/lib/services/dataService";
 
 export async function GET(req) {
   try {
-    await connectDB();
-
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return new Response(JSON.stringify({ error: "Not authenticated" }), { status: 401 });

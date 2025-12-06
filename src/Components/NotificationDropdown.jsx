@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Package, CheckCircle, AlertCircle, TruckIcon, Clock, DollarSign, Box } from "lucide-react";
 import { useNotificationStore } from "@/store/notificationStore";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 // Icon mapping based on category
@@ -47,9 +48,20 @@ export default function NotificationDropdown({ isOpen, onClose }) {
         return `${diffInDays} day${diffInDays > 1 ? "s" : ""} ago`;
     };
 
+    const router = useRouter(); // Import useRouter
+
     const handleNotificationClick = async (notification) => {
         if (!notification.read) {
-            await markAsRead(notification._id);
+            await markAsRead(notification._id || notification.id);
+        }
+
+        // Navigation logic
+        if (notification.metadata?.link) {
+            router.push(notification.metadata.link);
+            onClose(); // Close dropdown
+        } else if (notification.category === 'order') {
+            router.push('/orders');
+            onClose();
         }
     };
 
@@ -109,7 +121,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
                                         const Icon = iconMap[notification.category] || AlertCircle;
                                         return (
                                             <motion.div
-                                                key={notification._id}
+                                                key={notification.id || notification._id}
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
                                                 onClick={() => handleNotificationClick(notification)}
@@ -133,7 +145,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
                                                             {notification.message}
                                                         </p>
                                                         <p className="text-xs text-gray-500 dark:text-gray-500">
-                                                            {getTimeAgo(notification.createdAt)}
+                                                            {getTimeAgo(notification.created_at || notification.createdAt)}
                                                         </p>
                                                     </div>
                                                 </div>

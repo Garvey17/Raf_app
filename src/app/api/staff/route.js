@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Staff from "@/lib/models/StaffModel";
+import { Staff } from "@/lib/services/dataService";
 
 // GET all staff
 export async function GET(req) {
     try {
-        await connectDB();
-
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
         const role = searchParams.get("role");

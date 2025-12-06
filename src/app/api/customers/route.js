@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import User from "@/lib/models/UserModel";
+import { User } from "@/lib/services/dataService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 // GET all customers/users
 export async function GET(req) {
     try {
-        await connectDB();
-
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status"); // filter by active/inactive
         const verificationStatus = searchParams.get("verificationStatus");
@@ -32,8 +29,7 @@ export async function GET(req) {
         // Fetch all users
         let customers = await User.find(query)
             .select("-password") // Exclude password from results
-            .sort({ createdAt: -1 })
-            .lean();
+            .sort({ createdAt: -1 });
 
         // Filter by status if needed (since status is a virtual field)
         if (status) {

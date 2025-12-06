@@ -1,31 +1,66 @@
-import { NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { createServerClient } from '@supabase/ssr'
+import { NextResponse } from 'next/server'
 
-export async function middleware(req) {
-  const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+export async function middleware(request) {
+  let supabaseResponse = NextResponse.next({
+    request,
+  })
 
-  const isAuth = !!token;
-  const { pathname } = req.nextUrl;
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll()
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            request.cookies.set(name, value)
+          )
+          supabaseResponse = NextResponse.next({
+            request,
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          )
+        },
+      },
+    }
+  )
 
-  const publicRoutes = ["/auth/login", "/auth/register"];
+  // Refreshing the auth token
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const isPublic = publicRoutes.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  const isHome = pathname === "/";
+  const { pathname } = request.nextUrl
+  const publicRoutes = ["/auth/login", "/auth/register", "/auth/reset-password", "/auth/verify-email"]
+  const isPublic = publicRoutes.some((route) => pathname.startsWith(route))
+  const isHome = pathname === "/"
 
   // 1. If not authenticated & route is protected → redirect to login
-  if (!isAuth && !isPublic) {
-    return NextResponse.redirect(new URL("/auth/login", req.url));
+  if (!user && !isPublic && pathname !== "/favicon.ico") {
+    const url = request.nextUrl.clone()
+    url.pathname = '/auth/login'
+    return NextResponse.redirect(url)
   }
 
   // 2. If authenticated and they try to access "/" → redirect to dashboard
-  if (isHome && isAuth) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+  if (isHome && user) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
   }
 
-  return NextResponse.next();
+  // 3. If authenticated and trying to access auth pages -> redirect to dashboard
+  if (user && isPublic) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/dashboard'
+    return NextResponse.redirect(url)
+  }
+
+  return supabaseResponse
 }
 
 export const config = {

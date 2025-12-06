@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import User from "@/lib/models/UserModel";
+import { User } from "@/lib/services/dataService";
 
 // PATCH - Update customer verification status
 export async function PATCH(req, { params }) {
     try {
-        await connectDB();
         const { id } = params;
         const { verificationStatus } = await req.json();
 
@@ -20,9 +18,9 @@ export async function PATCH(req, { params }) {
 
         const customer = await User.findByIdAndUpdate(
             id,
-            { $set: { verificationStatus } },
-            { new: true, runValidators: true }
-        ).select("-password");
+            { verificationStatus },
+            { new: true }
+        );
 
         if (!customer) {
             return NextResponse.json(

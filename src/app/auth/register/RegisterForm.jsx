@@ -5,10 +5,12 @@ import { logo } from "@/Assets/assets";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { createClient } from "@/lib/supabase/supabaseClient";
 
 export default function RegisterForm() {
   const router = useRouter()
+  const supabase = createClient()
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -34,7 +36,12 @@ export default function RegisterForm() {
   const handleGoogleLogin = async () => {
     try {
       setGoogleLoading(true);
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${location.origin}/auth/callback`
+        }
+      })
     } catch (err) {
       setError("Google login failed");
       setGoogleLoading(false);
@@ -47,37 +54,33 @@ export default function RegisterForm() {
     setError("");
 
     try {
-      const res = await fetch("/api/auth/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          phone: formData.phone,
-          location: {
-            address: formData.address,
-            city: formData.city,
-            state: formData.state,
-            zipCode: formData.zipCode,
-            country: formData.country,
-          },
-        }),
-      });
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            name: formData.name,
+            phone: formData.phone,
+            location: {
+              address: formData.address,
+              city: formData.city,
+              state: formData.state,
+              zipCode: formData.zipCode,
+              country: formData.country,
+            }
+          }
+        }
+      })
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Signup failed");
+      if (error) {
+        setError(error.message);
         setLoading(false);
         return;
       }
 
       console.log("User created:", data);
-      // redirect or show success
-      router.push('/auth/login')
+      // redirect to verify email page
+      router.push('/auth/verify-email')
 
     } catch (error) {
       console.error(error);

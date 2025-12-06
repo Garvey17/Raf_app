@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Delivery from "@/lib/models/DeliveryModel";
-import Dispatch from "@/lib/models/DispatchModel";
-import Order from "@/lib/models/OrderModel";
-import Driver from "@/lib/models/DriverModel";
+import { Delivery, Dispatch, Order, Driver } from "@/lib/services/dataService";
 
 // PATCH - Confirm delivery
 export async function PATCH(req, { params }) {
     try {
-        await connectDB();
         const { id } = params;
         const { receivedBy, deliveryNotes, proofOfDelivery } = await req.json();
 
@@ -29,19 +24,25 @@ export async function PATCH(req, { params }) {
         }
 
         // Update delivery
-        delivery.deliveryStatus = "delivered";
-        delivery.deliveredAt = new Date();
-        delivery.receivedBy = receivedBy || delivery.customerName; // Default to customer name if not provided
+        const deliveryUpdates = {
+            deliveryStatus: "delivered",
+            deliveredAt: new Date(),
+            receivedBy: receivedBy || delivery.customerName // Default to customer name
+        };
 
         if (deliveryNotes) {
-            delivery.deliveryNotes = deliveryNotes;
+            deliveryUpdates.deliveryNotes = deliveryNotes;
         }
 
         if (proofOfDelivery) {
-            delivery.proofOfDelivery = proofOfDelivery;
+            deliveryUpdates.proofOfDelivery = proofOfDelivery;
         }
 
-        await delivery.save();
+        await Delivery.findByIdAndUpdate(id, deliveryUpdates);
+        // Note: data service modify in place but we use findByIdAndUpdate to mimic persistence for good measure.
+        // Actually, previous code used `delivery.save()`. 
+        // With dataService, modifying `delivery` (if it's a reference) works locally but better to use explicit update.
+        // But wait, findById returns clone. So we MUST use findByIdAndUpdate.
 
         // Update related dispatch status
         if (delivery.dispatch) {
@@ -64,23 +65,29 @@ export async function PATCH(req, { params }) {
 
         // Update driver's total deliveries count
         if (delivery.driver) {
-            await Driver.findOneAndUpdate(
-                { name: { $regex: delivery.driver, $options: "i" } },
-                {
-                    $inc: { totalDeliveries: 1 },
-                    $set: { lastDeliveryDate: new Date() }
-                }
-            );
+            // Need to find driver by name logic? Original code used generic findOneAndUpdate with regex.
+            const allDrivers = await Driver.find({});
+            const driver = allDrivers.find(d => d.name.toLowerCase() === delivery.driver.toLowerCase());
+
+            if (driver) {
+                await Driver.findByIdAndUpdate(
+                    driver._id,
+                    {
+                        totalDeliveries: (driver.totalDeliveries || 0) + 1,
+                        lastDeliveryDate: new Date()
+                    }
+                );
+            }
         }
 
-        await delivery.populate([
-            { path: "order", select: "items status" },
-            { path: "dispatch", select: "dispatchStatus" },
-        ]);
+        // Populate details for response
+        const updatedDelivery = await Delivery.findOne({ _id: id })
+            .populate("order")
+            .populate("dispatch");
 
         return NextResponse.json({
             message: "Delivery confirmed successfully",
-            delivery,
+            delivery: updatedDelivery,
         });
     } catch (error) {
         console.error("Error confirming delivery:", error);

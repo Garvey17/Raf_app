@@ -3,14 +3,25 @@
 import { useEffect } from "react";
 import { useOrderStore } from "@/store/orderStore";
 import { motion } from "framer-motion";
-import { Package, Clock, CheckCircle, XCircle } from "lucide-react";
+import { Package, Clock, CheckCircle, XCircle, Truck } from "lucide-react";
 
 export default function OrdersPage() {
-    const { orders, fetchOrders, loading, error } = useOrderStore();
+    const { orders, fetchOrders, loading, error, updateOrderStatus } = useOrderStore(); // Added updateOrderStatus
 
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders]);
+
+    const handleMarkDelivered = async (orderId) => {
+        if (confirm("Are you sure you have received this order?")) {
+            try {
+                await updateOrderStatus(orderId, 'delivered');
+                // Optional: show toast
+            } catch (err) {
+                alert("Failed to update status");
+            }
+        }
+    };
 
     const getStatusColor = (status) => {
         switch (status) {
@@ -20,7 +31,9 @@ export default function OrdersPage() {
                 return "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300";
             case "paid":
                 return "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300";
-            case "shipped":
+            case "in_transit": // Updated from shipped
+                return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300";
+            case "shipped": // Legacy
                 return "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300";
             case "delivered":
                 return "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300";
@@ -39,6 +52,8 @@ export default function OrdersPage() {
             case "paid":
             case "delivered":
                 return <CheckCircle className="w-4 h-4" />;
+            case "in_transit":
+                return <Package className="w-4 h-4" />;
             case "cancelled":
                 return <XCircle className="w-4 h-4" />;
             default:
@@ -93,7 +108,7 @@ export default function OrdersPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ delay: index * 0.05 }}
-                                className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
+                                className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-4 sm:p-6 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300"
                             >
                                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                                     <div className="flex-1">
@@ -159,6 +174,33 @@ export default function OrdersPage() {
                                                 </p>
                                             </div>
                                         )}
+
+                                        {/* Dispatch Information */}
+                                        {(order.status === 'in_transit' || order.status === 'delivered') && order.driverName && (
+                                            <div className="mt-3 pt-3 border-t border-gray-100 dark:border-slate-800 bg-blue-50/50 dark:bg-blue-900/10 p-3 rounded-xl">
+                                                <h4 className="text-xs font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                                    <Truck className="w-3 h-3" />
+                                                    Dispatch Details
+                                                </h4>
+                                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                                    <div>
+                                                        <p className="text-gray-500 dark:text-gray-400 text-xs">Driver</p>
+                                                        <p className="font-medium text-gray-900 dark:text-white">{order.driverName}</p>
+                                                        <p className="text-gray-500 text-xs">{order.driverPhone}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-gray-500 dark:text-gray-400 text-xs">Vehicle</p>
+                                                        <p className="font-medium text-gray-900 dark:text-white">{order.truckNumber}</p>
+                                                    </div>
+                                                    {order.atcNumber && (
+                                                        <div className="col-span-2 mt-1">
+                                                            <p className="text-gray-500 dark:text-gray-400 text-xs">ATC Number</p>
+                                                            <p className="font-mono text-gray-900 dark:text-white">{order.atcNumber}</p>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex md:flex-col items-center md:items-end gap-3">
@@ -168,8 +210,19 @@ export default function OrdersPage() {
                                             )}`}
                                         >
                                             {getStatusIcon(order.status)}
-                                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                                            {order.status === 'in_transit' ? 'In Transit' : order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                                         </span>
+
+                                        {/* Mark as Delivered Button */}
+                                        {order.status === 'in_transit' && (
+                                            <button
+                                                onClick={() => handleMarkDelivered(order._id || order.id)}
+                                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center gap-2"
+                                            >
+                                                <Package className="w-3 h-3" />
+                                                Mark Received
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </motion.div>

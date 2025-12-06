@@ -3,7 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/Auth";
 
 import {
   LayoutDashboard,
@@ -19,14 +20,13 @@ import {
 } from "lucide-react";
 
 import { logo } from "@/Assets/assets";
-import { signOut } from "next-auth/react";
 
 
 const mainMenu = [
   { title: "Dashboard", icon: LayoutDashboard, url: "/dashboard" },
-  { title: "Products", icon: Package, url: "/products" },
+  // { title: "Products", icon: Package, url: "/products" },
   { title: "Order", icon: ShoppingCart, url: "/order" },
-  { title: "Deliveries", icon: Truck, url: "/deliveries" },
+  // { title: "Deliveries", icon: Truck, url: "/deliveries" }, -- Removed for simplicity
   { title: "Payments", icon: CreditCard, url: "/payments" },
   { title: "Support", icon: MessageSquare, url: "/support" },
   { title: "Settings", icon: Settings, url: "/settings" },
@@ -35,11 +35,16 @@ const mainMenu = [
 export function AppSidebar() {
 
   const pathname = usePathname()
+  const router = useRouter()
+  const { logout } = useAuthStore()
 
   const isActive = (url) => pathname === url
+
   const handleLogOut = async () => {
-    await signOut({ callbackUrl: "/auth/login" })
+    await logout()
+    router.push("/auth/login")
   }
+
   return (
 
     <Sidebar className="border-r border-gray-200 dark:border-slate-800 bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl no-scrollbar">

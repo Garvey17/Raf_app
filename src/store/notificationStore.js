@@ -28,24 +28,14 @@ export const useNotificationStore = create((set, get) => ({
             }
 
             const data = await res.json();
+            const notifications = data.notifications || [];
 
-            if (data.success) {
-                const notifications = data.notifications || [];
-                const unreadCount = notifications.filter((n) => !n.read).length;
+            set({
+                notifications,
+                unreadCount: notifications.filter((n) => !n.read).length,
+                loading: false,
+            });
 
-                set({
-                    notifications,
-                    unreadCount,
-                    loading: false,
-                });
-            } else {
-                // If no success flag, set empty
-                set({
-                    notifications: [],
-                    unreadCount: 0,
-                    loading: false,
-                });
-            }
         } catch (error) {
             console.error("Error fetching notifications:", error);
             set({
@@ -62,24 +52,22 @@ export const useNotificationStore = create((set, get) => ({
     --------------------------- */
     markAsRead: async (id) => {
         try {
-            const res = await fetch(`/api/notifications/${id}/read`, {
-                method: "PATCH",
+            const res = await fetch(`/api/notifications/read`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id }),
             });
 
             if (!res.ok) {
                 throw new Error("Failed to mark notification as read");
             }
 
-            const data = await res.json();
-
-            if (data.success) {
-                set((state) => ({
-                    notifications: state.notifications.map((n) =>
-                        n._id === id ? { ...n, read: true } : n
-                    ),
-                    unreadCount: Math.max(0, state.unreadCount - 1),
-                }));
-            }
+            set((state) => ({
+                notifications: state.notifications.map((n) =>
+                    n.id === id ? { ...n, read: true } : n
+                ),
+                unreadCount: Math.max(0, state.unreadCount - 1),
+            }));
         } catch (error) {
             console.error("Error marking notification as read:", error);
             set({ error: error.message });
@@ -91,22 +79,18 @@ export const useNotificationStore = create((set, get) => ({
     --------------------------- */
     markAllAsRead: async () => {
         try {
-            const res = await fetch("/api/notifications/mark-all-read", {
-                method: "PATCH",
+            const res = await fetch("/api/notifications/read-all", {
+                method: "PUT",
             });
 
             if (!res.ok) {
                 throw new Error("Failed to mark all notifications as read");
             }
 
-            const data = await res.json();
-
-            if (data.success) {
-                set((state) => ({
-                    notifications: state.notifications.map((n) => ({ ...n, read: true })),
-                    unreadCount: 0,
-                }));
-            }
+            set((state) => ({
+                notifications: state.notifications.map((n) => ({ ...n, read: true })),
+                unreadCount: 0,
+            }));
         } catch (error) {
             console.error("Error marking all notifications as read:", error);
             set({ error: error.message });

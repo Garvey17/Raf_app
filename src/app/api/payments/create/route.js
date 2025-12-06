@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Payment from "@/lib/models/PaymentModel";
-import Order from "@/lib/models/OrderModel";
+import { Payment, Order } from "@/lib/services/dataService";
 
 // POST - Create a new payment
 export async function POST(req) {
     try {
-        await connectDB();
-
         const body = await req.json();
         const {
             orderId,
@@ -47,29 +43,23 @@ export async function POST(req) {
             status: "pending", // Legacy field
         });
 
-        // Populate references for response
-        await payment.populate([
-            { path: "user", select: "name email phone" },
-            { path: "order", select: "orderNumber items deliveryDate" },
-        ]);
+        // Use findOne to return populated structure if necessary
+        const populatedPayment = await Payment.findOne({ _id: payment._id })
+            .populate("user")
+            .populate("order");
 
         return NextResponse.json(
-            { message: "Payment created successfully", payment },
+            { message: "Payment created successfully", payment: populatedPayment || payment },
             { status: 201 }
         );
     } catch (error) {
         console.error("Error creating payment:", error);
 
-        // Handle duplicate reference error
-        if (error.code === 11000) {
-            return NextResponse.json(
-                { error: "Payment reference already exists" },
-                { status: 400 }
-            );
-        }
+        // Handle duplicate reference error? dataService doesn't throw on duplicates unless enforced.
+        // But for dummy data it's likely fine.
 
         return NextResponse.json(
-            { error: "Internal Server Error" },
+            { error: "Internal Server Error", details: error.message },
             { status: 500 }
         );
     }

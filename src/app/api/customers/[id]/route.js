@@ -1,14 +1,11 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import User from "@/lib/models/UserModel";
+import { User } from "@/lib/services/dataService";
 
-// GET single customer by ID
+// GET single customer
 export async function GET(req, { params }) {
     try {
-        await connectDB();
         const { id } = params;
-
-        const customer = await User.findById(id).select("-password");
+        const customer = await User.findById(id);
 
         if (!customer) {
             return NextResponse.json(
@@ -17,47 +14,40 @@ export async function GET(req, { params }) {
             );
         }
 
-        // Calculate status
+        // Calculate status (same logic as list)
         let status = "inactive";
         if (customer.lastPurchaseDate) {
             const daysSinceLastPurchase = Math.floor(
-                (Date.now() - customer.lastPurchaseDate.getTime()) /
+                (Date.now() - new Date(customer.lastPurchaseDate).getTime()) /
                 (1000 * 60 * 60 * 24)
             );
             status = daysSinceLastPurchase <= 90 ? "active" : "inactive";
         }
 
-        return NextResponse.json({
-            customer: { ...customer.toObject(), status },
-        });
+        return NextResponse.json(
+            { customer: { ...customer, status } },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error fetching customer:", error);
         return NextResponse.json(
-            { error: "Failed to fetch customer" },
+            { error: "Internal Server Error" },
             { status: 500 }
         );
     }
 }
 
-// PATCH - Update customer information
-export async function PATCH(req, { params }) {
+// UPDATE customer
+export async function PUT(req, { params }) {
     try {
-        await connectDB();
         const { id } = params;
-        const updates = await req.json();
-
-        // Prevent updating sensitive fields directly
-        delete updates.password;
-        delete updates.email; // Email changes should go through a separate verification process
-        delete updates._id;
-        delete updates.createdAt;
-        delete updates.updatedAt;
+        const body = await req.json();
 
         const customer = await User.findByIdAndUpdate(
             id,
-            { $set: updates },
-            { new: true, runValidators: true }
-        ).select("-password");
+            body,
+            { new: true } // Return updated document
+        );
 
         if (!customer) {
             return NextResponse.json(
@@ -66,33 +56,22 @@ export async function PATCH(req, { params }) {
             );
         }
 
-        // Calculate status
-        let status = "inactive";
-        if (customer.lastPurchaseDate) {
-            const daysSinceLastPurchase = Math.floor(
-                (Date.now() - customer.lastPurchaseDate.getTime()) /
-                (1000 * 60 * 60 * 24)
-            );
-            status = daysSinceLastPurchase <= 90 ? "active" : "inactive";
-        }
-
-        return NextResponse.json({
-            message: "Customer updated successfully",
-            customer: { ...customer.toObject(), status },
-        });
+        return NextResponse.json(
+            { message: "Customer updated successfully", customer },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error updating customer:", error);
         return NextResponse.json(
-            { error: "Failed to update customer" },
+            { error: "Internal Server Error" },
             { status: 500 }
         );
     }
 }
 
-// DELETE - Delete a customer
+// DELETE customer
 export async function DELETE(req, { params }) {
     try {
-        await connectDB();
         const { id } = params;
 
         const customer = await User.findByIdAndDelete(id);
@@ -104,13 +83,14 @@ export async function DELETE(req, { params }) {
             );
         }
 
-        return NextResponse.json({
-            message: "Customer deleted successfully",
-        });
+        return NextResponse.json(
+            { message: "Customer deleted successfully" },
+            { status: 200 }
+        );
     } catch (error) {
         console.error("Error deleting customer:", error);
         return NextResponse.json(
-            { error: "Failed to delete customer" },
+            { error: "Internal Server Error" },
             { status: 500 }
         );
     }

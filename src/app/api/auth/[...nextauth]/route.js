@@ -2,15 +2,9 @@ import NextAuth from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { compare } from "bcrypt";
-import User from "@/lib/models/UserModel.js";
-import { connectDB } from "@/lib/config/dbSetup";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import clientPromise from "@/lib/mongodbClient"; // adapter client
-
+import { User } from "@/lib/services/dataService";
 
 export const authOptions = {
-  adapter: MongoDBAdapter(clientPromise),
-
   session: {
     strategy: "jwt", // best for credentials provider
   },
@@ -32,13 +26,13 @@ export const authOptions = {
       },
 
       async authorize(credentials) {
-        await connectDB();
-
         const user = await User.findOne({ email: credentials.email });
 
         if (!user) throw new Error("User not found");
 
         // Validate password
+        // Note: For dummy users, the passwords in dummyData.js are hashed. 
+        // We'll use compare exactly as before. 
         const validPassword = await compare(credentials.password, user.password);
         if (!validPassword) throw new Error("Invalid email or password");
 

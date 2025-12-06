@@ -1,13 +1,15 @@
 'use client'
 import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
-import { BarChart3, Users, DollarSign, Activity, ShoppingBag, ArrowRight, Download, RefreshCw } from "lucide-react";
+import { BarChart3, Users, DollarSign, Activity, ShoppingBag, ArrowRight, Download, RefreshCw, ShoppingCart } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import { dangote3x } from "@/Assets/assets";
 import { Bmaster } from "@/Assets/assets";
 import { useAnalyticsStore } from "@/store/analyticsStore";
 import { useEffect, useState } from "react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 
 
@@ -15,7 +17,12 @@ export default function DashboardBento() {
   const { data: session } = useSession();
   const { analytics, loading, fetchAnalytics, refreshAnalytics, exportAnalytics } = useAnalyticsStore();
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const displayName = session?.user?.name || session?.user?.email || "Dashboard";
+  const router = useRouter();
+
+  const handleOrderClick = (productName) => {
+    router.push(`/order?product=${encodeURIComponent(productName)}`);
+  };
+
 
   useEffect(() => {
     fetchAnalytics();
@@ -49,12 +56,8 @@ export default function DashboardBento() {
   return (
     <div className="flex flex-col gap-4 sm:gap-6 p-3 sm:p-6 bg-gray-50/50 dark:bg-slate-950 min-h-screen">
 
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-2">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white capitalize">{displayName}</h1>
-          <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400">Welcome back, here's what's happening today.</p>
-        </div>
-        <div className="flex gap-2">
+      <div className="flex justify-end gap-2 order-2 md:order-first">
+        <div className="flex gap-2 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
@@ -87,14 +90,14 @@ export default function DashboardBento() {
         </div>
       </div>
 
-      <div className="w-full grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-3 lg:grid-cols-4 auto-rows-[200px]">
+      <div className="w-full grid gap-3 sm:gap-4 md:gap-6 grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-[160px] sm:auto-rows-[200px] order-1">
         {/* Big Analytics Card - Revenue */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:col-span-2 lg:col-span-2 row-span-2"
+          className="col-span-2 md:col-span-2 lg:col-span-2 row-span-2"
         >
-          <Card className="h-full p-6 flex flex-col justify-between rounded-3xl shadow-sm border-none bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden group">
+          <Card className="h-full p-4 sm:p-6 flex flex-col justify-between rounded-3xl shadow-sm border-none bg-gradient-to-br from-blue-600 to-indigo-700 text-white relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-32 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none group-hover:bg-white/20 transition-all duration-500"></div>
             <div className="absolute bottom-0 left-0 p-24 bg-black/10 rounded-full blur-2xl -ml-10 -mb-10 pointer-events-none"></div>
 
@@ -138,7 +141,7 @@ export default function DashboardBento() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
-          <Card className="h-full p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-slate-900 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 group">
+          <Card className="h-full p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-slate-900 hover:shadow-lg hover:shadow-blue-500/5 transition-all duration-300 group">
             <CardContent className="p-0 h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-medium text-gray-500 dark:text-gray-400">Active Orders</h2>
@@ -169,7 +172,7 @@ export default function DashboardBento() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
         >
-          <Card className="h-full p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-slate-900 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 group">
+          <Card className="h-full p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-slate-900 hover:shadow-lg hover:shadow-emerald-500/5 transition-all duration-300 group">
             <CardContent className="p-0 h-full flex flex-col justify-between">
               <div className="flex items-center justify-between">
                 <h2 className="text-base font-medium text-gray-500 dark:text-gray-400">Volume Bought</h2>
@@ -199,31 +202,63 @@ export default function DashboardBento() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="lg:col-span-2 row-span-1 md:col-span-3"
+          className="col-span-2 lg:col-span-2 row-span-1 md:col-span-3"
         >
-          <Card className="h-full p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-slate-900">
+          <Card className="h-full p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 flex flex-col justify-between bg-white dark:bg-slate-900">
             <CardContent className="p-0 h-full flex flex-col">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">Sales Performance</h2>
                 <BarChart3 className="w-5 h-5 text-gray-400" />
               </div>
-              <div className="flex-1 flex items-end justify-between gap-2 px-2">
+              <div className="flex-1 w-full h-[200px] px-2">
                 {loading ? (
-                  Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className="w-full bg-gray-200 dark:bg-slate-800 rounded-t-sm h-full animate-pulse"></div>
-                  ))
+                  <div className="w-full h-full bg-gray-200 dark:bg-slate-800 rounded animate-pulse"></div>
                 ) : (
-                  analytics?.salesPerformance?.map((day, i) => {
-                    const height = maxRevenue > 0 ? (day.revenue / maxRevenue) * 100 : 0;
-                    return (
-                      <div key={i} className="w-full bg-gray-100 dark:bg-slate-800 rounded-t-sm relative group h-full flex items-end" title={`${day.date}: ${formatCurrency(day.revenue)}`}>
-                        <div
-                          className="w-full bg-blue-600 dark:bg-blue-500 rounded-t-sm opacity-80 group-hover:opacity-100 transition-all duration-300"
-                          style={{ height: `${Math.max(height, 5)}%` }}
-                        ></div>
-                      </div>
-                    );
-                  })
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart
+                      data={analytics?.salesPerformance || []}
+                      margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                    >
+                      <defs>
+                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                          <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#E5E7EB" opacity={0.5} />
+                      <XAxis
+                        dataKey="date"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                      />
+                      <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fill: '#9CA3AF', fontSize: 12 }}
+                        tickFormatter={(value) => `₦${(value / 1000).toFixed(0)}k`}
+                      />
+                      <Tooltip
+                        cursor={{ stroke: '#3b82f6', strokeWidth: 1 }}
+                        contentStyle={{
+                          backgroundColor: '#1e293b',
+                          border: 'none',
+                          borderRadius: '8px',
+                          color: '#fff',
+                        }}
+                        itemStyle={{ color: '#fff' }}
+                        formatter={(value) => [`₦${value.toLocaleString()}`, "Revenue"]}
+                      />
+                      <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#3b82f6"
+                        strokeWidth={3}
+                        fillOpacity={1}
+                        fill="url(#colorRevenue)"
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
                 )}
               </div>
             </CardContent>
@@ -235,16 +270,16 @@ export default function DashboardBento() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4 }}
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 order-3"
       >
-        <Card className="md:col-span-2 lg:col-span-3 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+        <Card className="md:col-span-2 lg:col-span-3 p-4 sm:p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
           <CardContent className="p-0">
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white">Popular Products</h2>
-              <button className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
+              {/* <button className="text-sm font-medium text-blue-600 hover:text-blue-700 flex items-center gap-1">
                 View All <ArrowRight size={16} />
-              </button>
+              </button> */}
             </div>
 
             {/* Inner grid (2 cards) */}
@@ -270,8 +305,11 @@ export default function DashboardBento() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-lg">₦630</span>
-                    <button className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm hover:bg-blue-600 hover:text-white transition-all text-gray-900 dark:text-white">
-                      <ArrowRight size={14} />
+                    <button
+                      onClick={() => handleOrderClick("Blockmaster")}
+                      className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm hover:bg-blue-600 hover:text-white transition-all text-gray-900 dark:text-white"
+                    >
+                      <ShoppingCart size={14} />
                     </button>
                   </div>
                 </div>
@@ -297,13 +335,15 @@ export default function DashboardBento() {
                   </p>
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-lg">₦5,800</span>
-                    <button className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm hover:bg-blue-600 hover:text-white transition-all text-gray-900 dark:text-white">
-                      <ArrowRight size={14} />
+                    <button
+                      onClick={() => handleOrderClick("Dangote 3X")}
+                      className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm hover:bg-blue-600 hover:text-white transition-all text-gray-900 dark:text-white"
+                    >
+                      <ShoppingCart size={14} />
                     </button>
                   </div>
                 </div>
               </div>
-
             </div>
           </CardContent>
         </Card>

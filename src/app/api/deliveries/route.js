@@ -1,14 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Delivery from "@/lib/models/DeliveryModel";
-import Order from "@/lib/models/OrderModel"; // Ensure Order model is registered
-import Dispatch from "@/lib/models/DispatchModel"; // Ensure Dispatch model is registered
+import { Delivery } from "@/lib/services/dataService";
 
 // GET all deliveries
 export async function GET(req) {
     try {
-        await connectDB();
-
         const { searchParams } = new URL(req.url);
         const deliveryStatus = searchParams.get("deliveryStatus");
         const driver = searchParams.get("driver");

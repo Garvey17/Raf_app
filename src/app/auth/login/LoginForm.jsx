@@ -4,13 +4,13 @@ import { useState } from "react";
 import { logo } from "@/Assets/assets";
 import Image from "next/image";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-
-
+import { createClient } from "@/lib/supabase/supabaseClient";
 
 export default function LoginForm() {
-  const router = useRouter()
+  const router = useRouter();
+  const supabase = createClient();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -31,25 +31,29 @@ export default function LoginForm() {
     setLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
+    const { error } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
-      redirect: false,
-    });
+    })
 
-    setLoading(false);
-
-    if (res?.error) {
-      setError("Invalid email or password");
+    if (error) {
+      setError(error.message);
+      setLoading(false);
     } else {
-      router.push('/dashboard'); // redirect after login
+      router.push('/dashboard')
+      router.refresh()
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       setGoogleLoading(true);
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${location.origin}/auth/callback`
+        }
+      })
     } catch (err) {
       setError("Google login failed");
       setGoogleLoading(false);

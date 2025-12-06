@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Order from "@/lib/models/OrderModel";
+import { Order } from "@/lib/services/dataService";
 import { createOrderStatusNotification } from "@/lib/utils/notificationHelpers";
 
 // PATCH - Update order status
 export async function PATCH(req, { params }) {
     try {
-        await connectDB();
         const { id } = params;
         const { status } = await req.json();
 
@@ -19,11 +17,12 @@ export async function PATCH(req, { params }) {
             );
         }
 
+        // Update status
         const order = await Order.findByIdAndUpdate(
             id,
-            { $set: { status } },
-            { new: true, runValidators: true }
-        ).populate("user", "name email");
+            { status },
+            { new: true }
+        );
 
         if (!order) {
             return NextResponse.json(
@@ -32,23 +31,26 @@ export async function PATCH(req, { params }) {
             );
         }
 
+        // Re-fetch with population for notification context if needed
+        const populatedOrder = await Order.findOne({ _id: id }).populate("user");
+
         // Create notification for status change if user is linked
-        if (order.user) {
+        if (populatedOrder && populatedOrder.user) {
             await createOrderStatusNotification(
-                order.user._id.toString(),
-                order._id.toString(),
+                populatedOrder.user._id.toString(),
+                populatedOrder._id.toString(),
                 status,
                 {
-                    productName: order.items[0]?.productName || "Order",
-                    quantity: order.items[0]?.quantity || 0,
-                    deliveryDate: order.deliveryDate,
+                    productName: populatedOrder.items?.[0]?.productName || "Order",
+                    quantity: populatedOrder.items?.[0]?.quantity || 0,
+                    deliveryDate: populatedOrder.deliveryDate,
                 }
             );
         }
 
         return NextResponse.json({
             message: "Order status updated successfully",
-            order,
+            order: populatedOrder || order,
         });
     } catch (error) {
         console.error("Error updating order status:", error);

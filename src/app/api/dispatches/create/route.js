@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Dispatch from "@/lib/models/DispatchModel";
-import Order from "@/lib/models/OrderModel";
+import { Dispatch, Order } from "@/lib/services/dataService";
 
 // POST - Create dispatch from approved order
 export async function POST(req) {
     try {
-        await connectDB();
-
         const body = await req.json();
         const { orderId } = body;
 
@@ -59,11 +55,11 @@ export async function POST(req) {
             dispatchStatus: "ready_for_dispatch",
         });
 
-        // Populate order details for response
-        await dispatch.populate("order", "items status");
+        // Use findOne to return populated structure if necessary
+        const populatedDispatch = await Dispatch.findOne({ _id: dispatch._id }).populate("order");
 
         return NextResponse.json(
-            { message: "Dispatch created successfully", dispatch },
+            { message: "Dispatch created successfully", dispatch: populatedDispatch || dispatch },
             { status: 201 }
         );
     } catch (error) {

@@ -1,7 +1,6 @@
-import { connectDB } from "@/lib/config/dbSetup";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import Cart from "@/lib/models/CartModel";
+import { Cart } from "@/lib/services/dataService";
 
 export async function DELETE(req) {
     const session = await getServerSession(authOptions)
@@ -13,7 +12,6 @@ export async function DELETE(req) {
     const userId = session.user.id
 
     try {
-        await connectDB()
         const { itemId } = await req.json()
 
         const cart = await Cart.findOne({ user: userId })
@@ -22,13 +20,17 @@ export async function DELETE(req) {
             return new Response(JSON.stringify({ error: "Cart not found" }), { status: 404 })
         }
 
-        // IMPORTANT FIX — remove await + make sure mongoose detects changes
-        // Also using String() for robust ID comparison
-        cart.items = cart.items.filter(item => String(item.id) !== String(itemId))
+        // Filter items
+        const updatedItems = cart.items.filter(item => String(item.id) !== String(itemId))
 
-        await cart.save()
+        // Update cart
+        const updatedCart = await Cart.findByIdAndUpdate(
+            cart._id,
+            { items: updatedItems },
+            { new: true }
+        )
 
-        return new Response(JSON.stringify(cart), { status: 200 })
+        return new Response(JSON.stringify(updatedCart), { status: 200 })
 
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), { status: 500 })

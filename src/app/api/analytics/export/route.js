@@ -1,76 +1,74 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import { connectDB } from "@/lib/config/dbSetup";
-import Order from "@/lib/models/OrderModel";
+import { Order } from "@/lib/services/dataService";
 
 // GET /api/analytics/export - Export analytics as CSV or PDF
 export async function GET(req) {
-    try {
-        const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-        if (!session || !session.user) {
-            return NextResponse.json(
-                { error: "Unauthorized" },
-                { status: 401 }
-            );
+    if (!session || !session.user) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
+    }
+
+    const { searchParams } = new URL(req.url);
+    const format = searchParams.get("format") || "csv";
+
+    // Get analytics data
+    const now = new Date();
+    const last30DaysStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // dataService doesn't support complex date filtering in find() yet, so we filter in memory
+    const allOrders = await Order.find({});
+    const orders = allOrders.filter(order => new Date(order.createdAt) >= last30DaysStart)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    if (format === "csv") {
+      // Generate CSV
+      const csvRows = [
+        ["Date", "Order ID", "Customer", "Status", "Items", "Total Amount"].join(",")
+      ];
+
+      orders.forEach(order => {
+        const date = new Date(order.createdAt).toLocaleDateString();
+        const orderId = order._id.toString();
+        const customer = order.customerName || "Unknown";
+        const status = order.status;
+        const itemCount = order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0;
+        const total = order.totalAmount || 0;
+
+        csvRows.push([
+          date,
+          orderId,
+          `"${customer}"`,
+          status,
+          itemCount,
+          total
+        ].join(","));
+      });
+
+      // Add summary
+      csvRows.push("");
+      csvRows.push("Summary");
+      csvRows.push(`Total Orders,${orders.length}`);
+      csvRows.push(`Total Revenue,${orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0)}`);
+      csvRows.push(`Total Items,${orders.reduce((sum, o) => sum + (o.items ? o.items.reduce((s, i) => s + i.quantity, 0) : 0), 0)}`);
+
+      const csvContent = csvRows.join("\n");
+
+      return new NextResponse(csvContent, {
+        headers: {
+          "Content-Type": "text/csv",
+          "Content-Disposition": `attachment; filename="analytics-${new Date().toISOString().split('T')[0]}.csv"`
         }
-
-        await connectDB();
-
-        const { searchParams } = new URL(req.url);
-        const format = searchParams.get("format") || "csv";
-
-        // Get analytics data
-        const now = new Date();
-        const last30DaysStart = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-        const orders = await Order.find({
-            createdAt: { $gte: last30DaysStart }
-        }).sort({ createdAt: -1 }).lean();
-
-        if (format === "csv") {
-            // Generate CSV
-            const csvRows = [
-                ["Date", "Order ID", "Customer", "Status", "Items", "Total Amount"].join(",")
-            ];
-
-            orders.forEach(order => {
-                const date = new Date(order.createdAt).toLocaleDateString();
-                const orderId = order._id.toString();
-                const customer = order.customerName;
-                const status = order.status;
-                const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
-                const total = order.totalAmount || 0;
-
-                csvRows.push([
-                    date,
-                    orderId,
-                    `"${customer}"`,
-                    status,
-                    itemCount,
-                    total
-                ].join(","));
-            });
-
-            // Add summary
-            csvRows.push("");
-            csvRows.push("Summary");
-            csvRows.push(`Total Orders,${orders.length}`);
-            csvRows.push(`Total Revenue,${orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0)}`);
-            csvRows.push(`Total Items,${orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0)}`);
-
-            const csvContent = csvRows.join("\n");
-
-            return new NextResponse(csvContent, {
-                headers: {
-                    "Content-Type": "text/csv",
-                    "Content-Disposition": `attachment; filename="analytics-${new Date().toISOString().split('T')[0]}.csv"`
-                }
-            });
-        } else if (format === "pdf") {
-            // For PDF, we'll create a simple HTML that can be printed to PDF
-            const htmlContent = `
+      });
+    } else if (format === "pdf") {
+      // For PDF, we'll create a simple HTML that can be printed to PDF
+      const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -106,9 +104,9 @@ export async function GET(req) {
         <tr>
           <td>${new Date(order.createdAt).toLocaleDateString()}</td>
           <td>${order._id.toString().slice(-8)}</td>
-          <td>${order.customerName}</td>
+          <td>${order.customerName || "Unknown"}</td>
           <td>${order.status}</td>
-          <td>${order.items.reduce((sum, item) => sum + item.quantity, 0)}</td>
+          <td>${order.items ? order.items.reduce((sum, item) => sum + item.quantity, 0) : 0}</td>
           <td>₦${(order.totalAmount || 0).toLocaleString()}</td>
         </tr>
       `).join('')}
@@ -119,7 +117,7 @@ export async function GET(req) {
     <h2>Summary</h2>
     <p><strong>Total Orders:</strong> ${orders.length}</p>
     <p><strong>Total Revenue:</strong> ₦${orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0).toLocaleString()}</p>
-    <p><strong>Total Items:</strong> ${orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0)}</p>
+    <p><strong>Total Items:</strong> ${orders.reduce((sum, o) => sum + (o.items ? o.items.reduce((s, i) => s + i.quantity, 0) : 0), 0)}</p>
   </div>
   
   <script>
@@ -132,22 +130,22 @@ export async function GET(req) {
 </html>
       `;
 
-            return new NextResponse(htmlContent, {
-                headers: {
-                    "Content-Type": "text/html",
-                }
-            });
+      return new NextResponse(htmlContent, {
+        headers: {
+          "Content-Type": "text/html",
         }
-
-        return NextResponse.json(
-            { error: "Invalid format. Use 'csv' or 'pdf'" },
-            { status: 400 }
-        );
-    } catch (error) {
-        console.error("Error exporting analytics:", error);
-        return NextResponse.json(
-            { error: "Failed to export analytics", details: error.message },
-            { status: 500 }
-        );
+      });
     }
+
+    return NextResponse.json(
+      { error: "Invalid format. Use 'csv' or 'pdf'" },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("Error exporting analytics:", error);
+    return NextResponse.json(
+      { error: "Failed to export analytics", details: error.message },
+      { status: 500 }
+    );
+  }
 }

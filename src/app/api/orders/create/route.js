@@ -1,17 +1,12 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Order from "@/lib/models/OrderModel";
-import User from "@/lib/models/UserModel";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { createOrderStatusNotification } from "@/lib/utils/notificationHelpers";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(req) {
     try {
-        await connectDB();
+        const supabase = await createClient();
 
-        // Get session to link notification to user
-        const session = await getServerSession(authOptions);
+        // Get authenticated user
+        const { data: { user } } = await supabase.auth.getUser();
 
         const body = await req.json();
         const { product, quantity, name, phone, location, deliveryDate, instructions } = body;
@@ -24,61 +19,53 @@ export async function POST(req) {
             );
         }
 
-        // Convert deliveryDate string to Date object if needed
-        const deliveryDateObj = deliveryDate instanceof Date
-            ? deliveryDate
-            : new Date(deliveryDate);
+        // Generate Order Number: ORD-YYYYMMDD-XXXX
+        const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+        const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+        const orderNumber = `ORD-${dateStr}-${randomSuffix}`;
 
-        // Create the order
-        const newOrder = await Order.create({
-            user: session?.user?.id, // Link to logged-in user if available
-            customerName: name,
-            customerPhone: phone,
-            address: location,
-            deliveryDate: deliveryDateObj,
-            instructions,
-            items: [
-                {
-                    productName: product,
-                    quantity: Number(quantity),
-                    priceAtPurchase: 0, // You might want to look up price from a Product model if available
-                },
-            ],
-            totalAmount: 0, // Calculate this if you have prices
-            status: "pending",
-        });
+        // Construct items array (assuming single product selection for now as per form)
+        const items = [
+            {
+                productName: product,
+                quantity: Number(quantity),
+                priceAtPurchase: 0, // Ideally fetch this from DB, but 0 for now as per logic
+            }
+        ];
 
-        // Update user's lastPurchaseDate if logged in
-        if (session?.user?.id) {
-            await User.findByIdAndUpdate(
-                session.user.id,
-                { $set: { lastPurchaseDate: new Date() } }
-            );
+        // Insert into Supabase
+        const { data, error } = await supabase
+            .from('orders')
+            .insert({
+                order_number: orderNumber,
+                user_id: user?.id || null, // Link if logged in
+                customer_name: name,
+                customer_phone: phone,
+                address: location,
+                delivery_date: new Date(deliveryDate), // Ensure Date object/ISO string
+                instructions: instructions,
+                items: items, // JSONB
+                total_amount: 0, // Placeholder
+                status: 'pending'
+            })
+            .select()
+            .single();
 
-            // Create success notification for the user
-            await createOrderStatusNotification(
-                session.user.id,
-                newOrder._id.toString(),
-                "pending",
-                {
-                    productName: product,
-                    quantity: quantity,
-                    deliveryDate: deliveryDate,
-                }
-            );
+        if (error) {
+            console.error("Supabase insert error:", error);
+            throw new Error(error.message);
         }
 
         return NextResponse.json(
-            { message: "Order created successfully", order: newOrder },
+            { message: "Order created successfully", order: data },
             { status: 201 }
         );
+
     } catch (error) {
         console.error("Order creation error:", error);
         return NextResponse.json(
-            { error: "Internal Server Error" },
+            { error: error.message || "Internal Server Error" },
             { status: 500 }
         );
     }
 }
-
-

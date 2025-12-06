@@ -51,6 +51,24 @@ export const useOrderStore = create((set) => ({
         }
     },
 
+    products: [],
+
+    fetchProducts: async () => {
+        try {
+            const { createClient } = await import("@/lib/supabase/supabaseClient");
+            const supabase = createClient();
+            const { data, error } = await supabase.from("products").select("*").eq("is_active", true);
+
+            if (error) throw error;
+
+            set({ products: data || [] });
+        } catch (error) {
+            console.error("Failed to fetch products:", error);
+            // Fallback or empty
+            set({ products: [] });
+        }
+    },
+
     submitOrder: async (orderData) => {
         set({ loading: true, error: null, success: false });
         try {
@@ -71,6 +89,36 @@ export const useOrderStore = create((set) => ({
                 success: true,
                 orders: [data.order, ...state.orders] // Optimistically update list
             }));
+            return data;
+        } catch (error) {
+            set({ loading: false, error: error.message });
+            throw error;
+        }
+    },
+
+    updateOrderStatus: async (orderId, newStatus) => {
+        set({ loading: true, error: null });
+        try {
+            const res = await fetch("/api/orders/update-status", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ orderId, status: newStatus }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to update order status");
+            }
+
+            // Update local state
+            set((state) => ({
+                orders: state.orders.map(o =>
+                    (o._id === orderId || o.id === orderId) ? { ...o, status: newStatus } : o
+                ),
+                loading: false
+            }));
+
             return data;
         } catch (error) {
             set({ loading: false, error: error.message });

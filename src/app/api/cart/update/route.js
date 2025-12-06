@@ -1,12 +1,9 @@
-import { connectDB } from "@/lib/config/dbSetup";
-import Cart from "@/lib/models/CartModel";
+import { Cart } from "@/lib/services/dataService";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function PUT(req) {
   try {
-    await connectDB();
-
     const session = await getServerSession(authOptions);
     if (!session) {
       return new Response(JSON.stringify({ message: "Not authenticated" }), { status: 401 });
@@ -23,18 +20,22 @@ export async function PUT(req) {
 
     if (!cart) return new Response(JSON.stringify({ message: "Cart not found" }), { status: 404 });
 
-    const item = cart.items.find(
+    const items = [...cart.items];
+    const itemIndex = items.findIndex(
       (item) => String(item.id) === String(productId)
     );
 
-    if (!item) return new Response(JSON.stringify({ message: "Product not in cart" }), { status: 404 });
+    if (itemIndex === -1) return new Response(JSON.stringify({ message: "Product not in cart" }), { status: 404 });
 
-    item.quantity = quantity;
+    items[itemIndex].quantity = quantity;
 
-    await cart.save();
+    const updatedCart = await Cart.findByIdAndUpdate(
+      cart._id,
+      { items },
+      { new: true }
+    );
 
-
-    return new Response(JSON.stringify(cart), { status: 200 });
+    return new Response(JSON.stringify(updatedCart), { status: 200 });
   } catch (err) {
     return new Response(JSON.stringify({ error: err.message }), { status: 500 });
   }

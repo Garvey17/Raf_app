@@ -1,12 +1,9 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/config/dbSetup";
-import Driver from "@/lib/models/DriverModel";
+import { Driver } from "@/lib/services/dataService";
 
 // GET all drivers
 export async function GET(req) {
     try {
-        await connectDB();
-
         const { searchParams } = new URL(req.url);
         const status = searchParams.get("status");
         const vehicleAssigned = searchParams.get("vehicleAssigned");
