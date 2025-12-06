@@ -1,6 +1,6 @@
 'use client'
 import { useSession } from "next-auth/react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/Components/ui/card";
 import { BarChart3, Users, DollarSign, Activity, ShoppingBag, ArrowRight, Download, RefreshCw, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";

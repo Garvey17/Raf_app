@@ -1,5 +1,5 @@
 'use client'
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/Components/ui/card";
 import { Mail, Phone, MessageCircle, HelpCircle, FileText, Send } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";

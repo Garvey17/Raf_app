@@ -1,7 +1,7 @@
 "use client";
 
 import { ShoppingCart, Bell, Wallet, Menu, History, Search, Box, FileText, ChevronRight } from "lucide-react";
-import { Card } from "@/components/ui/card";
+import { Card } from "@/Components/ui/card";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { usePathname, useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ import { useNotificationStore } from "@/store/notificationStore";
 import Link from "next/link";
 import CartBadge from "../cartBadge";
 import NotificationDropdown from "../NotificationDropdown";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useSidebar } from "@/Components/ui/sidebar";
 
 
 

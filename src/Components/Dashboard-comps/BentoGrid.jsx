@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/Components/ui/card";
 import { BarChart3, Users, DollarSign, Activity } from "lucide-react";
 import { motion } from "framer-motion";
 

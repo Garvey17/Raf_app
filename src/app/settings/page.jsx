@@ -1,5 +1,5 @@
 'use client'
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/Components/ui/card";
 import { User, Bell, Lock, Palette, Shield, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";

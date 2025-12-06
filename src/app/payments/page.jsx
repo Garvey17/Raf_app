@@ -1,5 +1,5 @@
 'use client'
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/Components/ui/card";
 import { DollarSign, Wallet, CreditCard, Search, AlertCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useMemo, useEffect } from "react";
