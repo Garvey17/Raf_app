@@ -1,4 +1,5 @@
 "use client";
+import { createPortal } from "react-dom";
 
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Package, CheckCircle, AlertCircle, TruckIcon, Clock, DollarSign, Box } from "lucide-react";
@@ -69,7 +70,10 @@ export default function NotificationDropdown({ isOpen, onClose }) {
         await markAllAsRead();
     };
 
-    return (
+    // Use portal to render outside the header stacking context
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <>
@@ -79,7 +83,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-40"
+                        className="fixed inset-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-[100]"
                     />
 
                     {/* Dropdown Menu */}
@@ -88,7 +92,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -10, scale: 0.95 }}
                         transition={{ duration: 0.2 }}
-                        className="fixed top-20 right-6 w-96 max-h-[600px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 z-50 overflow-hidden flex flex-col"
+                        className="fixed top-20 right-2 sm:right-6 w-[92vw] sm:w-96 max-h-[600px] bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-slate-700 z-[101] overflow-hidden flex flex-col"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-slate-700">
@@ -170,6 +174,7 @@ export default function NotificationDropdown({ isOpen, onClose }) {
                     </motion.div>
                 </>
             )}
-        </AnimatePresence>
+        </AnimatePresence>,
+        document.body
     );
 }
