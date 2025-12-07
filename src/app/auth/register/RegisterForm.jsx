@@ -265,7 +265,7 @@ export default function RegisterForm() {
 
       {/* Google Sign-in */}
       <div className="flex flex-col gap-4 w-full">
-        <button
+        {/* <button
           onClick={handleGoogleLogin}
           disabled={googleLoading}
           className="w-full bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-gray-200 font-medium py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-3 disabled:opacity-50"
@@ -276,7 +276,7 @@ export default function RegisterForm() {
             className="w-5 h-5"
           />
           {googleLoading ? "Connecting..." : "Google"}
-        </button>
+        </button> */}
 
         <div className="text-center mt-2">
           <p className="text-sm text-gray-600 dark:text-gray-400">
