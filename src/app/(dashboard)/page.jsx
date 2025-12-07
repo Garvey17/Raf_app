@@ -56,7 +56,7 @@ export default function DashboardBento() {
     : 1;
 
   return (
-    <div className="flex flex-col gap-4 sm:gap-6 p-3 sm:p-6 bg-gray-50/50 dark:bg-slate-950 min-h-screen">
+    <div className="flex flex-col gap-4 sm:gap-6 p-2 sm:p-6 bg-gray-50/50 dark:bg-slate-950 min-h-screen">
 
       <div className="flex justify-end gap-2 order-2 md:order-first">
         <div className="flex gap-2 w-full sm:w-auto">
@@ -122,7 +122,7 @@ export default function DashboardBento() {
                   </div>
                 ) : (
                   <>
-                    <p className="text-5xl font-bold mb-2">{formatCurrency(analytics?.revenue?.current || 0)}</p>
+                    <p className="text-3xl min-[350px]:text-4xl sm:text-5xl font-bold mb-2">{formatCurrency(analytics?.revenue?.current || 0)}</p>
                     <div className="flex items-center gap-2 text-sm text-blue-100 bg-white/10 w-fit px-3 py-1 rounded-full backdrop-blur-sm">
                       <span className={`font-bold flex items-center ${(analytics?.revenue?.percentageChange || 0) >= 0 ? 'text-emerald-300' : 'text-red-300'
                         }`}>
@@ -241,11 +241,11 @@ export default function DashboardBento() {
             </div>
 
             {/* Inner grid (2 cards) */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
 
               {/* Product 1 */}
-              <div className="group relative rounded-2xl p-6 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors duration-300 flex flex-row items-center gap-6">
-                <div className="relative w-32 h-32 bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm flex-shrink-0">
+              <div className="group relative rounded-2xl p-3 sm:p-6 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors duration-300 flex flex-col min-[350px]:flex-row items-center gap-4 sm:gap-6">
+                <div className="relative w-full h-32 min-[350px]:w-24 min-[350px]:h-24 sm:w-32 sm:h-32 bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm flex-shrink-0">
                   <Image
                     src={Bmaster}
                     alt="Product 1"
@@ -253,8 +253,8 @@ export default function DashboardBento() {
                     className="rounded-lg object-contain"
                   />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 w-full text-center min-[350px]:text-left">
+                  <div className="flex items-center justify-center min-[350px]:justify-start gap-2 mb-2">
                     <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs font-bold rounded-full">Top Seller</span>
                   </div>
                   <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">Blockmaster</h3>
@@ -274,8 +274,8 @@ export default function DashboardBento() {
               </div>
 
               {/* Product 2 */}
-              <div className="group relative rounded-2xl p-6 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors duration-300 flex flex-row items-center gap-6">
-                <div className="relative w-32 h-32 bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm flex-shrink-0">
+              <div className="group relative rounded-2xl p-3 sm:p-6 bg-gray-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors duration-300 flex flex-col min-[350px]:flex-row items-center gap-4 sm:gap-6">
+                <div className="relative w-full h-32 min-[350px]:w-24 min-[350px]:h-24 sm:w-32 sm:h-32 bg-white dark:bg-slate-800 rounded-xl p-2 shadow-sm flex-shrink-0">
                   <Image
                     src={dangote3x}
                     alt="Product 2"
@@ -283,8 +283,8 @@ export default function DashboardBento() {
                     className="rounded-lg object-contain"
                   />
                 </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 w-full text-center min-[350px]:text-left">
+                  <div className="flex items-center justify-center min-[350px]:justify-start gap-2 mb-2">
                     <span className="px-2 py-1 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold rounded-full">Best Value</span>
                   </div>
                   <h3 className="font-bold text-lg text-gray-900 dark:text-white mb-1 group-hover:text-blue-600 transition-colors">Dangote 3X</h3>

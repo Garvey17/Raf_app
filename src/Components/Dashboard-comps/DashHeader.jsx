@@ -125,7 +125,7 @@ export default function DashboardHeader() {
     >
 
       {/* Left Section */}
-      <div className="flex items-center gap-4 flex-1 md:flex-none">
+      <div className="flex items-center gap-2 sm:gap-4 flex-1 md:flex-none">
 
         {/* Mobile Search Bar */}
         <div className="md:hidden flex flex-1 items-center bg-gray-100 dark:bg-slate-800/50 rounded-xl px-3 py-2 border border-transparent focus-within:border-blue-500/20 focus-within:bg-white dark:focus-within:bg-slate-800 transition-all w-full sm:w-64 relative" ref={searchRef}>
