@@ -58,6 +58,7 @@ export default function RegisterForm() {
         email: formData.email,
         password: formData.password,
         options: {
+          emailRedirectTo:"https://raf-app.vercel.app/auth/confirm",
           data: {
             name: formData.name,
             phone: formData.phone,
