@@ -27,6 +27,7 @@ revenue_metrics AS (
             AND status IN ('paid', 'delivered') 
             THEN total_amount ELSE 0 END), 0) as prev_revenue
     FROM public.orders
+    WHERE user_id = auth.uid()
 ),
 
 -- 3. Active Orders Count
@@ -34,6 +35,7 @@ active_orders_metrics AS (
     SELECT COUNT(*) as active_count
     FROM public.orders
     WHERE status IN ('pending', 'approved', 'in_transit', 'ready_for_dispatch')
+    AND user_id = auth.uid()
 ),
 
 -- 4. Volume Metric (Sum of quantities from JSONB items for this week)
@@ -44,6 +46,7 @@ volume_metrics AS (
          jsonb_array_elements(items) as item
     WHERE created_at >= (SELECT start_of_week FROM date_ranges)
     AND status != 'cancelled'
+    AND user_id = auth.uid()
 ),
 
 -- 5. Sales Performance (Daily revenue for last 30 days)
@@ -58,6 +61,7 @@ daily_sales AS (
     ) d
     LEFT JOIN public.orders o ON date_trunc('day', o.created_at) = date_trunc('day', d) 
         AND o.status IN ('paid', 'delivered')
+        AND o.user_id = auth.uid()
     GROUP BY 1
     ORDER BY 1
 )
