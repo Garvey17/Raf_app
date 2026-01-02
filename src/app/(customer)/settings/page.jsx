@@ -1,10 +1,10 @@
 'use client'
-import { Card, CardContent } from "@/Components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { User, Bell, Lock, Palette, Shield, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import ThemeToggle from "../../../Components/ThemeButton";
+import ThemeToggle from "../../../components/ThemeButton";
 
 export default function SettingsPage() {
     const { data: session } = useSession();

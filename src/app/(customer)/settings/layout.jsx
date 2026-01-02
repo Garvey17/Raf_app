@@ -1,8 +1,8 @@
 "use client";
 
-import DashboardHeader from "@/Components/Dashboard-comps/DashHeader";
-import { AppSidebar } from "@/Components/Sidebar";
-import { SidebarProvider, SidebarTrigger } from "@/Components/ui/sidebar";
+import DashboardHeader from "@/components/Dashboard-comps/DashHeader";
+import { AppSidebar } from "@/components/Sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 
 export default function SettingsLayout({ children }) {

@@ -1,8 +1,8 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import Providers from "@/Components/Providers";
-import AuthInitializer from "@/Components/AuthInitializer";
+import Providers from "@/components/Providers";
+import AuthInitializer from "@/components/AuthInitializer";
 
 
 

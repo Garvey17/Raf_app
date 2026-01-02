@@ -1,6 +1,6 @@
 'use client'
 import { useSession } from "next-auth/react";
-import { Card, CardContent } from "@/Components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { BarChart3, Users, DollarSign, Activity, ShoppingBag, ArrowRight, Download, RefreshCw, ShoppingCart } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -11,7 +11,7 @@ import { useAnalyticsStore } from "@/store/analyticsStore";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 
-const ClientAreaChart = dynamic(() => import("@/Components/Dashboard-comps/ClientAreaChart"), { ssr: false });
+const ClientAreaChart = dynamic(() => import("@/components/Dashboard-comps/ClientAreaChart"), { ssr: false });
 
 
 
