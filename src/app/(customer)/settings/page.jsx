@@ -4,7 +4,7 @@ import { User, Bell, Lock, Palette, Shield, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import ThemeToggle from "../../Components/ThemeButton";
+import ThemeToggle from "../../../Components/ThemeButton";
 
 export default function SettingsPage() {
     const { data: session } = useSession();
@@ -18,6 +18,7 @@ export default function SettingsPage() {
         company: "",
 
         // Notifications
+        
         emailNotifications: true,
         smsNotifications: false,
         orderUpdates: true,

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { User } from "@/lib/services/dataService";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/app/(customer)/api/auth/[...nextauth]/route";
 
 // GET all customers/users
 export async function GET(req) {
